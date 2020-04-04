@@ -4,7 +4,7 @@
     <van-nav-bar class="barsty" title="登录" />
     <!-- 输入框 -->
     <van-cell-group>
-      <van-field v-model="obj.phone" placeholder="请输入手机号" :error-message="msg.phone">
+      <van-field v-model="obj.mobile" placeholder="请输入手机号" :error-message="msg.mobile">
         <template #left-icon>
           <i style="font-size: 18px; color: #666666;" class="iconfont icon-shouji"></i>
         </template>
@@ -23,48 +23,65 @@
     </van-cell-group>
     <!-- 登录 -->
     <div class="btnlogin">
-      <van-button type="primary" block @click="login">登录</van-button>
+      <van-button type="primary" block @click="login" :loading="isLoading">登录</van-button>
     </div>
   </div>
 </template>
 
 <script>
+import { apiLogin } from '../../api/user'
 export default {
   data () {
     return {
       obj: {
-        phone: '', // 手机号
-        name: ''
+        mobile: '18611111111', // 手机号
+        code: '246810'
       },
       msg: {
-        phone: '',
+        mobile: '',
         code: ''
-      }
+      },
+      // 设置按钮的加载状态
+      isLoading: false
     }
   },
   methods: {
     // 完成验证登录
-    login () {
+    async login () {
+      // 登陆的时候,按钮状态开启
+      this.isLoading = true
       if (this.checkData()) {
-        window.console.log(11111)
+        // 捕获登陆失败信息
+        try {
+          // 验证通过的逻辑
+          const { data: res } = await apiLogin(this.obj)
+          window.console.log(res)
+          // 将服务器返回的token保存到vuex和本地
+          this.$store.commit('setToken', res.data)
+          this.$router.push('index')
+        } catch {
+          this.$toast.fail('登陆失败')
+        }
       } else {
-        window.console.log(22222)
+        window.console.log('验证不通过')
       }
+      // 加载完毕,按钮状态关闭
+      this.isLoading = false
     },
     // 封装合法性验证逻辑
     checkData () {
       // 判断合法性
       const checkArr = []
       // 验证手机号
-      if (this.obj.phone.length !== 11) {
-        this.msg.phone = '手机号长度不合法'
+      if (this.obj.mobile.length !== 11) {
+        this.msg.mobile = '手机号长度不合法'
         checkArr.push(false)
       } else {
-        this.msg.phone = ''
+        this.msg.mobile = ''
         checkArr.push(true)
       }
       // 验证验证码
-      if (this.obj.code !== 6) {
+      if (this.obj.code.length !== 6) {
         this.msg.code = '验证码不合法'
         checkArr.push(false)
       } else {
