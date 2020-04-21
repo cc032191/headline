@@ -34,7 +34,7 @@ export default {
   data () {
     return {
       obj: {
-        mobile: '18611111111', // 手机号
+        mobile: '18633333333', // 手机号
         code: '246810'
       },
       msg: {
@@ -55,10 +55,17 @@ export default {
         try {
           // 验证通过的逻辑
           const { data: res } = await apiLogin(this.obj)
-          window.console.log(res)
+          // window.console.log(res)
           // 将服务器返回的token保存到vuex和本地
           this.$store.commit('setToken', res.data)
-          this.$router.push('index')
+          // 判断当前的path
+          if (this.$route.path === '/login') {
+            // 如果是正常登录的页面就跳转到首页
+            this.$router.push('/index')
+          } else {
+            // 如果是验证登录就跳转到上一个页面
+            this.$router.back()
+          }
         } catch {
           this.$toast.fail('登陆失败')
         }
@@ -73,7 +80,7 @@ export default {
       // 判断合法性
       const checkArr = []
       // 验证手机号
-      if (this.obj.mobile.length !== 11) {
+      if (this.obj.mobile.trim().length !== 11) {
         this.msg.mobile = '手机号长度不合法'
         checkArr.push(false)
       } else {
@@ -81,7 +88,7 @@ export default {
         checkArr.push(true)
       }
       // 验证验证码
-      if (this.obj.code.length !== 6) {
+      if (this.obj.code.trim().length !== 6) {
         this.msg.code = '验证码不合法'
         checkArr.push(false)
       } else {
